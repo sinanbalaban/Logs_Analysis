@@ -47,11 +47,14 @@ FROM
 
 
 def get_queryResults(sql_query):
-    db = psycopg2.connect(database="news")
-    c = db.cursor()
-    c.execute(sql_query)
-    results = c.fetchall()
-    db.close()
+    try:
+        db = psycopg2.connect(database="news")
+        c = db.cursor()
+        c.execute(sql_query)
+        results = c.fetchall()
+        db.close()
+    except ValueError:
+        print("Oops!, There is an error")
     return results
 
 
@@ -63,18 +66,14 @@ result3 = get_queryResults(query3)
 # print functions for query results
 
 def print_res1or2(resultData):
-    for indx in range(len(resultData)):
-        title = resultData[indx][0]
-        res = resultData[indx][1]
-        print("\t" + "%s - %d" % (title, res) + " views")
+    for key, value in resultData:
+        print("\t{} - {} views".format(key, value))
     print("\n")
 
 
 def print_res3(resultData):
-    for indx in range(len(resultData)):
-        title = resultData[indx][0]
-        res = resultData[indx][1]
-        print("\t" + "%s - %g" % (title, res) + "% views")
+    for key, value in resultData:
+        print("\t{} - {}% views".format(key, value))
     print("\n")
 
 
