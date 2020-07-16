@@ -20,4 +20,4 @@ vagrant@vagrant:/vagrant$ python logs_analysis.py
 
 3. On which days more than 1% of the requests led to error?
 
- Jul 17, 2016 - 2% views
+ Jul 17, 2016 - 2.263% views

@@ -2,43 +2,45 @@
 
 import psycopg2
 
-question1 = "1. What are the most popular three articles of all time? Which articles have been accessed the most?"
+question1 = "1. What are the most popular three articles of all time?"
 
-query1 = (""" 
-			SELECT a.title, count(*) AS num
-			FROM articles a, log l 
-			WHERE a.slug = substring(l.path, 10)
-			GROUP BY a.title
-			ORDER BY num DESC
-			LIMIT 3;
-			""")
+query1 = ("""
+SELECT a.title,count(*) AS num
+FROM articles a, log l
+WHERE a.slug = substring(l.path, 10)
+GROUP BY a.title
+ORDER BY num DESC
+LIMIT 3;
+""")
 
-question2 = "2. Who are the most popular article authors of all time? That is, when you sum up all of the articles each author has written, which authors get the most page views?"
+question2 = "2. Who are the most popular article authors of all time?"
 
-query2 = (""" 
-			SELECT au.name, count(*) AS num 
-			FROM articles ar, authors au, log l
-			WHERE ar.author = au.id and ar.slug = substring(l.path, 10) and l.status LIKE '%200%OK%'
-			GROUP BY au.name
-			ORDER BY num DESC
-			LIMIT 3; 
-			""")
+query2 = ("""
+SELECT au.name,count(*) AS num
+FROM articles ar, authors au, log l
+WHERE ar.author = au.id and ar.slug = substring(l.path, 10)
+and l.status like '200%'
+GROUP BY au.name
+ORDER BY num DESC
+LIMIT 3;
+""")
 
 question3 = "3. On which days did more than 1% of requests lead to errors?"
 
 query3 = ("""
-            SELECT AllReq.log_date, round((100.0*FailReq.ReqCount)/(AllReq.ReqCount)) AS errors
-            FROM
-               (SELECT to_char(TIME, 'Mon DD, YYYY') AS log_date, count(*) AS ReqCount
-                FROM log
-                GROUP BY to_char(TIME, 'Mon DD, YYYY')) AS AllReq,
-               (SELECT to_char(TIME, 'Mon DD, YYYY') AS log_date, count(*) AS ReqCount
-                FROM log
-                WHERE (status like '4%' or status like '5%') -- client or network error 
-                GROUP BY to_char(TIME, 'Mon DD, YYYY')) AS FailReq
-             WHERE AllReq.log_date=FailReq.log_date
-               AND ((100*FailReq.ReqCount)/(AllReq.ReqCount)) > 1;
-               """)
+SELECT AllReq.logDate,
+round(((100.0*FailReq.ReqCount)/(AllReq.ReqCount)),3) AS errors
+FROM
+    (SELECT to_char(TIME,'Mon DD, YYYY') AS logDate,count(*) AS ReqCount
+     FROM log
+     GROUP BY to_char(TIME,'Mon DD, YYYY')) AS AllReq,
+    (SELECT to_char(TIME,'Mon DD, YYYY') AS logDate,count(*) AS ReqCount
+     FROM log
+     WHERE (status like '4%' or status like '5%')
+     GROUP BY to_char(TIME, 'Mon DD, YYYY')) AS FailReq
+     WHERE AllReq.logDate=FailReq.logDate
+     AND ((100.0*FailReq.ReqCount)/(AllReq.ReqCount)) > 1;
+""")
 
 
 # Connect to the db and feed query to extract
@@ -72,10 +74,12 @@ def print_res3(resultData):
     for indx in range(len(resultData)):
         title = resultData[indx][0]
         res = resultData[indx][1]
-        print("\t" + "%s - %d" % (title, res) + "% views")
+        print("\t" + "%s - %g" % (title, res) + "% views")
     print("\n")
 
+
 # print results
+
 
 print(question1)
 print_res1or2(result1)
